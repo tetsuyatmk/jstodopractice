@@ -72,13 +72,19 @@
         $($add).click(function(){
           //id=listにp要素を追加
           //$('#list').append('<p><input type="checkbox">' + $(todo_text).val() + '</p>');
+          let date = new Date();
+          let formattedDate = [
+              date.getFullYear(),
+              ('0' + (date.getMonth() + 1)).slice(-2),
+              ('0' + date.getDate()).slice(-2)
+          ].join('');
           let body =
           {
             TableName: "todoTable",
             Item: {
               taskid: 50,
               createdate: 0,
-              updatedate: 0,
+              updatedate: formattedDate,
               title: $(todo_text).val(),
               done: false
             }
