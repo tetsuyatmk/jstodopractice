@@ -116,6 +116,7 @@
             targetids.push($(this).parent().children()[0].getAttribute('taskid'));
           });
 
+          let n = 0;
           targetids.forEach((v, i, a) => {
             let body =
             {
@@ -126,6 +127,7 @@
             };
 
             // Content-Type headerは必須
+            n++;
             $.ajax({
                 url: taskdelapiuri,
                 type: 'post',
@@ -136,13 +138,14 @@
                 dataType: 'json',
                 success: function (data) {
                     console.info(data);
+                    if (--n === 0) {
+                      // 非同期がうまくいかない
+                      getalltasks();
+                    }
                 }
             });
 
           });
-
-          // 非同期がうまくいかない
-          getalltasks();
         });
       });
     </script>
