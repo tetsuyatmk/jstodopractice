@@ -36,9 +36,10 @@
     <script type="text/javascript">
       const tasklistapiuri = "https://e8c7xwp9r0.execute-api.ap-northeast-1.amazonaws.com/beta/todoFunction/list";
       const taskaddapiuri = "https://e8c7xwp9r0.execute-api.ap-northeast-1.amazonaws.com/beta/todoFunction/regist";
+      const taskdelapiuri = "https://e8c7xwp9r0.execute-api.ap-northeast-1.amazonaws.com/beta/todoFunction/delete";
 
       function getalltasks() {
-        // 一回全部消す
+        // エレメントクリア
         $('#list').children().each(function(){
           $(this).remove();
         });
@@ -112,18 +113,14 @@
             let body =
             {
               TableName: "todoTable",
-              Item: {
-                taskid: Number(v),
-                createdate: 0,
-                updatedate: 0,
-                title: ' ',
-                done: false
+              Key: {
+                taskid: Number(v)
               }
             };
 
             // Content-Type headerは必須
             $.ajax({
-                url: taskaddapiuri,
+                url: taskdelapiuri,
                 type: 'post',
                 data: JSON.stringify(body),
                 headers: {
