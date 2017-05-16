@@ -34,9 +34,10 @@
 
     <!-- 追加処理 -->
     <script type="text/javascript">
-      const tasklistapiuri = "https://e8c7xwp9r0.execute-api.ap-northeast-1.amazonaws.com/beta/todoFunction/list";
-      const taskaddapiuri = "https://e8c7xwp9r0.execute-api.ap-northeast-1.amazonaws.com/beta/todoFunction/regist";
-      const taskdelapiuri = "https://e8c7xwp9r0.execute-api.ap-northeast-1.amazonaws.com/beta/todoFunction/delete";
+      const baseurl = "https://e8c7xwp9r0.execute-api.ap-northeast-1.amazonaws.com/beta/todoFunction/";
+      const tasklistapiuri = baseurl + "list";
+      const taskaddapiuri = baseurl + "regist";
+      const taskdelapiuri = baseurl + "delete";
 
       function getalltasks() {
         // エレメントクリア
