@@ -39,6 +39,18 @@
       const taskaddapiuri = baseurl + "regist";
       const taskdelapiuri = baseurl + "delete";
 
+      function geneid() {
+        const rdmax = 9999999;
+        const rdmin = 1;
+        let id = 0;
+
+        id = Date.now() * 10000000 +
+             Math.floor((Math.random() * ((rdmax + 1 ) - rdmin)) + rdmin);
+
+        return id;
+      }
+
+
       function getalltasks() {
         // エレメントクリア
         $('#list').children().each(function(){
@@ -82,7 +94,7 @@
           {
             TableName: "todoTable",
             Item: {
-              taskid: 50,
+              taskid: geneid(),
               createdate: 0,
               updatedate: formattedDate,
               title: $(todo_text).val(),
