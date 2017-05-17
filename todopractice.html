@@ -151,7 +151,7 @@
                 success: function (data) {
                     console.info(data);
                     if (--n === 0) {
-                      // 非同期がうまくいかない
+                      // nを使って非同期がうまく制御された！
                       getalltasks();
                     }
                 }
