@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0060)https://futurepull-tasks.herokuapp.com/todo-mita-jquery.html -->
 <html>
   <head>
 
@@ -16,14 +15,7 @@
 
   </head>
   <body>
-
-    <!-- テキストボックスと追加ボタン -->
-    <!-- <div>
-      <input type="text" class="form-control" id="todo_text" placeholder="タスクを入力">
-      <button id="$add">おす</button>
-    </div> -->
-
-    <form class="form-horizontal">
+    <form class="form-horizontal" id="todoform">
       <div class="form-group">
         <label for="taskinput" class="col-sm-2 control-label">タスク</label>
         <div class="col-sm-10" id="todoform">
@@ -36,8 +28,6 @@
         </div>
       </div>
     </form>
-
-
 
     <!-- Todoリスト -->
     <div class="container">
@@ -57,61 +47,55 @@
     <!-- 削除ボタン -->
     <div>
       <button class="btn btn-danger" id="$delete">タスク削除</button>
-      <!-- <button id="$delete">けす</button> -->
     </div>
 
     <!-- 追加処理 -->
     <script type="text/javascript">
-      const baseurl = "https://e8c7xwp9r0.execute-api.ap-northeast-1.amazonaws.com/beta/todoFunction/";
+      const baseurl = "https://stfdhev1qf.execute-api.ap-northeast-1.amazonaws.com/beta/todofunction/";
       const tasklistapiuri = baseurl + "list";
       const taskaddapiuri = baseurl + "regist";
       const taskdelapiuri = baseurl + "delete";
 
+      // idを自動生成するFunction
       function geneid() {
         const rdmax = 9999999;
         const rdmin = 1;
         let id = 0;
-
         id = Date.now() * 10000000 +
              Math.floor((Math.random() * ((rdmax + 1 ) - rdmin)) + rdmin);
-
-        return id;
+        return String(id);
       }
 
-
+      // タスクの一覧を取得する
       function getalltasks() {
         // エレメントクリア
         $('#list').children().each(function(){
           $(this).remove();
         });
 
-        var gettasks;
-        $.get(tasklistapiuri, {TableName: "todoTable"}, data => {
-          gettasks = data;
+        // APIのGETメソッドを呼び出す
+        fetch(tasklistapiuri).then(function(response) {
+          return response.json();
+        }).then(function(json) {
+          tasks = json.json.Items;
 
-          tasks = gettasks.body.Items;
-          console.log(tasks);
-
-          // geted json each
-          tasks.forEach((v, i, a) => {
-              console.log(v.taskid, v.title)
-              $('#list').append('<tr taskid=' + v.taskid + '><td><input type="checkbox"></td>' +
-              '<td>' + v.title + '</td>' +
-              '<td>' + v.createdate + '</td></tr>');
-          });
+            tasks.forEach((v, i, a) => {
+                console.log(v.taskid, v.title)
+                $('#list').append('<tr taskid=' + v.taskid + '><td><input type="checkbox"></td>' +
+                '<td>' + v.title + '</td>' +
+                '<td>' + v.createdate + '</td></tr>');
+            });
         });
-
         return;
       }
 
+      // 初期化処理
       $(document).ready(function(){
         getalltasks();
 
         // イベントハンドラの登録などのコード
         // 追加ボタンが押されたときのイベント
         $($add).click(function(){
-          //id=listにp要素を追加
-          //$('#list').append('<p><input type="checkbox">' + $(todo_text).val() + '</p>');
           let date = new Date();
           let formattedDate = [
               date.getFullYear(),
@@ -122,39 +106,33 @@
           alert(msg);
           let body =
           {
-            TableName: "todoTable",
+            TableName: "todoTableMita",
             Item: {
               taskid: geneid(),
-              createdate: 0,
+              createdate: formattedDate,
               updatedate: formattedDate,
               // title: $(todo_text).val(),
-              title: msg,
+              title: $('#todoform [name=todo_text]').val(),
               done: false
             }
           };
 
-          // Content-Type headerは必須
-          $.ajax({
-              url: taskaddapiuri,
-              type: 'post',
-              data: JSON.stringify(body),
-              headers: {
-                "Content-Type": "application/json"
-              },
-              dataType: 'json',
-              success: function (data) {
-
-                  getalltasks();
-                  console.info(data);
-              }
+          // APIのPOSTメソッドを呼び出す
+          fetch(taskaddapiuri, {
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+            body: JSON.stringify(body),
+          }).then(function(response) {
+            return response.json();
+          }).then(function(json) {
+            getalltasks();
           });
-        });
 
+        });
 
         // 削除ボタンが押されたときのイベント
         $($delete).click(function(){
           let targetids = [];
-
           $('#list :checkbox:checked').each(function(){
             // targetids.push($(this).parent().children()[0].getAttribute('taskid'));
             targetids.push($(this).parent().parent().attr('taskid'));
@@ -164,31 +142,26 @@
           targetids.forEach((v, i, a) => {
             let body =
             {
-              TableName: "todoTable",
+              TableName: "todoTableMita",
               Key: {
-                taskid: Number(v)
+                taskid: String(v)
               }
             };
 
             // Content-Type headerは必須
             n++;
-            $.ajax({
-                url: taskdelapiuri,
-                type: 'post',
-                data: JSON.stringify(body),
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                dataType: 'json',
-                success: function (data) {
-                    console.info(data);
-                    if (--n === 0) {
-                      // nを使って非同期がうまく制御された！
-                      getalltasks();
-                    }
-                }
+            fetch(taskdelapiuri, {
+              headers: { "Content-Type": "application/json" },
+              method: "DELETE",
+              body: JSON.stringify(body),
+            }).then(function(response) {
+              return response.json();
+            }).then(function(json) {
+              if (--n === 0) {
+                // nを使って非同期がうまく制御された！
+                getalltasks();
+              }
             });
-
           });
         });
       });
