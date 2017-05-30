@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>ToDoリストサンプル</title>
+    <!-- jQuery の読み込み -->
+    <script src="https://code.jquery.com/jquery-2.0.0.min.js"></script>
+
+    <!-- BootstrapのCSS読み込み -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- BootstrapのJS読み込み -->
+    <script src="js/bootstrap.min.js"></script>
+
+  </head>
+  <body>
+    <form class="form-horizontal" id="todoform">
+      <div class="form-group">
+        <label for="taskinput" class="col-sm-2 control-label">タスク</label>
+        <div class="col-sm-10" id="todoform">
+          <input type="text" class="form-control" name="todo_text" placeholder="タスク">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button class="btn btn-default" id="$add">タスク登録</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Todoリスト -->
+    <div class="container">
+      <table class="table  table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>選択</th>
+            <th>タスク</th>
+            <th>作成年月日</th>
+          </tr>
+        </thead>
+
+        <tbody id = "list"><!-- ここに追加される --></tdocy>
+      </table>
+    </div>
+
+    <!-- 削除ボタン -->
+    <div>
+      <button class="btn btn-danger" id="$delete">タスク削除</button>
+    </div>
+
+    <!-- 追加処理 -->
+    <script type="text/javascript">
+      const baseurl = "https://stfdhev1qf.execute-api.ap-northeast-1.amazonaws.com/beta/todofunction/";
+      const tasklistapiuri = baseurl + "list";
+      const taskaddapiuri = baseurl + "regist";
+      const taskdelapiuri = baseurl + "delete";
+
+      // idを自動生成するFunction
+      function geneid() {
+        const rdmax = 9999999;
+        const rdmin = 1;
+        let id = 0;
+        id = Date.now() * 10000000 +
+             Math.floor((Math.random() * ((rdmax + 1 ) - rdmin)) + rdmin);
+        return String(id);
+      }
+
+      // タスクの一覧を取得する
+      function getalltasks() {
+        // エレメントクリア
+        $('#list').children().each(function(){
+          $(this).remove();
+        });
+
+        // APIのGETメソッドを呼び出す
+        fetch(tasklistapiuri).then(function(response) {
+          return response.json();
+        }).then(function(json) {
+          tasks = json.json.Items;
+
+            tasks.forEach((v, i, a) => {
+                console.log(v.taskid, v.title)
+                $('#list').append('<tr taskid=' + v.taskid + '><td><input type="checkbox"></td>' +
+                '<td>' + v.title + '</td>' +
+                '<td>' + v.createdate + '</td></tr>');
+            });
+        });
+        return;
+      }
+
+      // 初期化処理
+      $(document).ready(function(){
+        getalltasks();
+
+        // イベントハンドラの登録などのコード
+        // 追加ボタンが押されたときのイベント
+        $($add).click(function(){
+          let date = new Date();
+          let formattedDate = [
+              date.getFullYear(),
+              ('0' + (date.getMonth() + 1)).slice(-2),
+              ('0' + date.getDate()).slice(-2)
+          ].join('');
+          var msg = $('#todoform [name=todo_text]').val();
+          alert(msg);
+          let body =
+          {
+            TableName: "todoTableMita",
+            Item: {
+              taskid: geneid(),
+              createdate: formattedDate,
+              updatedate: formattedDate,
+              // title: $(todo_text).val(),
+              title: $('#todoform [name=todo_text]').val(),
+              done: false
+            }
+          };
+
+          // APIのPOSTメソッドを呼び出す
+          fetch(taskaddapiuri, {
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+            body: JSON.stringify(body),
+          }).then(function(response) {
+            return response.json();
+          }).then(function(json) {
+            getalltasks();
+          });
+
+        });
+
+        // 削除ボタンが押されたときのイベント
+        $($delete).click(function(){
+          let targetids = [];
+          $('#list :checkbox:checked').each(function(){
+            // targetids.push($(this).parent().children()[0].getAttribute('taskid'));
+            targetids.push($(this).parent().parent().attr('taskid'));
+          });
+
+          let n = 0;
+          targetids.forEach((v, i, a) => {
+            let body =
+            {
+              TableName: "todoTableMita",
+              Key: {
+                taskid: String(v)
+              }
+            };
+
+            // Content-Type headerは必須
+            n++;
+            fetch(taskdelapiuri, {
+              headers: { "Content-Type": "application/json" },
+              method: "DELETE",
+              body: JSON.stringify(body),
+            }).then(function(response) {
+              return response.json();
+            }).then(function(json) {
+              if (--n === 0) {
+                // nを使って非同期がうまく制御された！
+                getalltasks();
+              }
+            });
+          });
+        });
+      });
+    </script>
+</body>
+</html>
