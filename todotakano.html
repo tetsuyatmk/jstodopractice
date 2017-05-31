@@ -51,10 +51,11 @@
 
     <!-- 追加処理 -->
     <script type="text/javascript">
-      const baseurl = "https://stfdhev1qf.execute-api.ap-northeast-1.amazonaws.com/beta/todofunction/";
+      const baseurl = "https://oqhjzzrgji.execute-api.ap-northeast-1.amazonaws.com/beta/todofunction/";
       const tasklistapiuri = baseurl + "list";
       const taskaddapiuri = baseurl + "regist";
       const taskdelapiuri = baseurl + "delete";
+      const mytablename = "fpTakanoTodo";
 
       // idを自動生成するFunction
       function geneid() {
@@ -77,7 +78,7 @@
         fetch(tasklistapiuri).then(function(response) {
           return response.json();
         }).then(function(json) {
-          tasks = json.json.Items;
+          tasks = json.body.Items;
 
             tasks.forEach((v, i, a) => {
                 console.log(v.taskid, v.title)
@@ -102,11 +103,14 @@
               ('0' + (date.getMonth() + 1)).slice(-2),
               ('0' + date.getDate()).slice(-2)
           ].join('');
-          var msg = $('#todoform [name=todo_text]').val();
+
+          //var msg = $('#todoform [name=todo_text]').val();
           //alert(msg);
+          //console.log(msg);
+
           let body =
           {
-            TableName: "todoTableMita",
+            TableName: mytablename,
             Item: {
               taskid: geneid(),
               createdate: formattedDate,
@@ -127,7 +131,6 @@
           }).then(function(json) {
             getalltasks();
           });
-
         });
 
         // 削除ボタンが押されたときのイベント
@@ -142,7 +145,7 @@
           targetids.forEach((v, i, a) => {
             let body =
             {
-              TableName: "todoTableMita",
+              TableName: mytablename,
               Key: {
                 taskid: String(v)
               }
